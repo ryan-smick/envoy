@@ -258,7 +258,7 @@ public:
 
     if (factory == nullptr && !is_optional) {
       ExceptionUtil::throwEnvoyException(
-          fmt::format("Didn't find a registered implementation for name: '{}'", name));
+          fmt::format("Didn't find a registered implementation for name: '{}'. Registered factories with base '{}': {}", name, typeid(Factory).name(), fmt::join(Registry::FactoryRegistry<Factory>::registeredNames(), ", ")));
     }
 
     return factory;
