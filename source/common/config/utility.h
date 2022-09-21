@@ -311,18 +311,16 @@ public:
   template <class Factory, class ProtoMessage>
   static Factory* getAndCheckFactory(const ProtoMessage& message, bool is_optional) {
     Factory* factory = Utility::getFactoryByType<Factory>(message.typed_config());
-    if (Runtime::runtimeFeatureEnabled("envoy.reloadable_features.no_extension_lookup_by_name")) {
-      if (factory == nullptr && !is_optional) {
-        ExceptionUtil::throwEnvoyException(
-            fmt::format("Didn't find a registered implementation for '{}' with type URL: '{}'",
-                        message.name(), getFactoryType(message.typed_config())));
-      }
-      return factory;
-    } else if (factory != nullptr) {
-      return factory;
+    if (factory == nullptr && !is_optional) {
+      ExceptionUtil::throwEnvoyException(
+          fmt::format("Didn't find a registered implementation for '{}' with type URL: '{}'",
+                      message.name(), getFactoryType(message.typed_config())));
     }
-
-    return Utility::getAndCheckFactoryByName<Factory>(message.name(), is_optional);
+    else if (factory == nullptr) {
+      ENVOY_LOG_MISC(warn, fmt::format("WARNING: Didn't find a registered implementation for '{}' with type URL: '{}'",
+                                       message.name(), getFactoryType(message.typed_config())));
+    }
+    return factory;
   }
 
   /**
